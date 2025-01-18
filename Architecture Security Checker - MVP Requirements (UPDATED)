@@ -1,0 +1,70 @@
+# Architecture Security Checker - MVP Requirements
+
+## 1. Current Status ✅
+- Basic CLI implementation complete
+- OCR processing working
+- LLM integration functional (Gemini)
+- Basic security analysis working
+
+## 2. Technical Implementation
+
+### 2.1 Command Line Implementation (COMPLETED)
+```bash
+# Current usage
+$ python main.py path/to/diagram.png
+```
+
+#### Working Features
+1. OCR Processing:
+   - Basic component detection
+   - Text extraction
+   - Network boundary recognition
+
+2. LLM Analysis:
+   - Provider-agnostic architecture
+   - Supports both Gemini and OpenAI
+   - Configurable through environment variables:
+     ```bash
+     # For Gemini
+     export GOOGLE_API_KEY='your-key'
+     
+     # For OpenAI (future)
+     export OPENAI_API_KEY='your-key'
+     export OPENAI_BASE_URL='your-url'  # Optional for custom endpoints
+     ```
+
+#### Current Output Format
+```
+Quick Security Check Results:
+✓ Firewalls present
+✓ Network segmentation
+✗ CDE isolation
+
+Architecture Patterns:
+- Pattern details...
+
+Security Zones:
+- Zone details...
+
+Key Security Risks:
+- Risk details...
+
+Recommendations:
+1. Specific recommendations...
+```
+
+### 2.2 Next Phase: Slack Integration
+- Bot implementation pending
+- Will use existing analysis engine
+- Need to add file handling
+
+## 3. Current Success Metrics
+✅ Successfully processes different diagram styles
+✅ < 30 second response time
+✅ Provides actionable feedback
+⚠️ Needs more testing with various diagrams
+
+## 4. Known Limitations
+- OCR accuracy varies with diagram quality
+- Limited to basic PCI-DSS checks
+- No persistent storage yet

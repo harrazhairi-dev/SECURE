@@ -1,0 +1,79 @@
+# Architecture Security Checker - Technical Requirements Document
+
+## 1. Current Implementation Status
+
+### 1.1 Completed Components
+1. **Core Processing Pipeline**
+   - OCR text extraction
+   - Component detection
+   - Security analysis
+
+2. **LLM Integration**
+   - Provider-agnostic architecture
+   - Support for multiple LLM providers:
+     - Gemini (implemented)
+     - OpenAI (ready for implementation)
+
+3. **Configuration**
+   ```python
+   # Environment Variables
+   GOOGLE_API_KEY      # For Gemini
+   OPENAI_API_KEY      # For OpenAI
+   OPENAI_BASE_URL     # For custom OpenAI endpoints
+   ```
+
+### 1.2 Project Structure
+```
+arch-security-checker/
+├── src/
+│   ├── ocr/
+│   │   └── extractor.py      # OCR processing
+│   ├── analysis/
+│   │   ├── llm_providers/    # LLM integration
+│   │   │   ├── base.py
+│   │   │   ├── gemini_provider.py
+│   │   │   └── openai_provider.py
+│   │   └── analyzer.py
+│   └── utils/
+├── tests/
+└── main.py
+```
+
+## 2. Next Steps
+
+### 2.1 Immediate Tasks
+1. **OpenAI Integration**
+   - Implement OpenAI provider
+   - Test with custom endpoints
+   - Validate response format
+
+2. **Testing**
+   - Create test suite
+   - Add more test diagrams
+   - Validate different scenarios
+
+3. **Slack Integration**
+   - Set up bot framework
+   - Implement file handling
+   - Format responses for Slack
+
+### 2.2 Configuration Management
+- Use `.env` file for local development
+- Document all environment variables
+- Add configuration validation
+
+## 3. Development Guidelines
+1. **Adding New LLM Providers**
+   - Implement `LLMProvider` interface
+   - Match existing response format
+   - Add provider-specific configuration
+
+2. **Testing New Features**
+   - Add unit tests
+   - Include test diagrams
+   - Document edge cases
+
+## 4. Known Issues & Limitations
+- OCR accuracy depends on diagram quality
+- Limited to basic security checks
+- No persistent storage 

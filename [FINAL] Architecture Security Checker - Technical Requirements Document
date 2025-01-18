@@ -1,0 +1,82 @@
+# Architecture Security Checker - Technical Requirements Document
+
+## 1. Project Overview
+
+### 1.1 Purpose
+To develop a Slack-based bot that helps business users self-check their architecture diagrams against basic PCI-DSS security requirements before engaging the security team.
+
+### 1.2 Target Users
+- Primary: Business users (developers, architects, project managers)
+- Secondary: Security team (for feedback and oversight)
+
+### 1.3 Success Criteria
+- Reduction in basic security review requests to the security team
+- Early detection of common security issues
+- Positive user adoption through Slack interface
+
+## 2. Core Requirements
+
+### 2.1 MVP Features
+1. **Slack Integration**
+   - Slack bot command to submit diagrams
+   - Simple feedback interface within Slack threads
+   - Quick-action buttons for common operations
+
+2. **Basic Diagram Processing**
+   - Support for PNG and JPG formats initially
+   - OCR to extract text and basic components
+   - Focus on common PCI-DSS elements:
+     - Network segmentation
+     - Firewall placement
+     - Basic data flow security
+
+3. **Analysis & Reporting**
+   - Quick-response format suitable for Slack
+   - Clear "Pass/Warning/Fail" indicators
+   - Links to relevant PCI-DSS requirements
+   - Specific recommendations for improvements
+
+### 2.2 Technical Architecture
+1. **Slack Bot**
+   - Simple command interface (/check-arch)
+   - File upload handling
+   - Thread-based responses
+
+2. **Processing Pipeline**
+   - OCR for text extraction
+   - LLM for interpretation (GPT-4)
+   - Basic rule engine for PCI-DSS checks
+
+3. **Initial PCI-DSS Focus Areas**
+   - Network segmentation validation
+   - Cardholder data environment identification
+   - Basic security control presence
+
+## 3. Development Phases
+
+### Phase 1: PoC (Command Line)
+- Basic OCR and LLM integration
+- Simple PCI-DSS rule checking
+- Text-based output
+
+### Phase 2: Slack Integration
+- Bot implementation
+- File handling
+- Basic response formatting
+
+### Phase 3: Enhancement
+- Feedback collection
+- Rule refinement
+- User experience improvements
+
+## 4. Technical Constraints
+- Processing time: < 30 seconds per diagram
+- Support for 20-30 requests per week
+- Slack file size limits
+- Simple storage requirements
+
+## 5. Future Considerations
+- Additional compliance frameworks
+- Integration with diagramming tools
+- Advanced visualization features
+- Custom rule creation

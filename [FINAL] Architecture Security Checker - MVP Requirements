@@ -1,0 +1,69 @@
+# Architecture Security Checker - MVP Requirements
+
+## 1. Core Focus
+Build a simple PoC that can detect basic PCI-DSS network segmentation issues, focusing on:
+1. Presence of firewalls
+2. Basic network segmentation (public vs private networks)
+3. Cardholder Data Environment (CDE) isolation
+
+## 2. Technical Implementation
+
+### 2.1 PoC Phase (Command Line)
+```python
+# Example usage
+$ python check_diagram.py path/to/diagram.png
+```
+
+#### Input
+- Simple PNG/JPG diagrams
+- Focus on clear, well-drawn diagrams initially
+
+#### Processing
+1. OCR to extract:
+   - Component labels
+   - Network boundaries
+   - Connection lines
+
+2. LLM Analysis:
+   - Single-shot analysis
+   - Simple prompt focusing on:
+     - Firewall identification
+     - Network zone detection
+     - Basic security control presence
+
+#### Output
+```
+Quick Security Check Results:
+✓ Firewalls present
+⚠ CDE network segmentation unclear
+✗ Missing DMZ for public-facing components
+
+Recommendations:
+1. Add clear network boundary for CDE
+2. Implement DMZ for internet-facing services
+```
+
+### 2.2 Slack Integration
+Simple bot implementation:
+```
+/check-arch [uploaded diagram]
+```
+
+Response in thread:
+- Same output as command line
+- Simple formatting for Slack
+- Immediate response (no background processing)
+
+## 3. Success Metrics
+- Successfully processes basic diagrams
+- < 30 second response time
+- Accurate detection of obvious security issues
+- Clear, actionable feedback
+
+## 4. Out of Scope (for MVP)
+- Complex diagram formats
+- Detailed PCI-DSS requirements
+- History tracking
+- Educational links
+- Custom rules
+- Integration with drawing tools
