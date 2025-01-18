@@ -78,25 +78,278 @@ if __name__ == "__main__":
     main()
 EOL
 
-# Create source files
+# Create OCR extractor
 cat > src/ocr/extractor.py << 'EOL'
-# [Previous extractor.py content]
+import pytesseract
+from PIL import Image
+import cv2
+import numpy as np
+
+def extract_components(image_path):
+    """Extract components from architecture diagram using OCR."""
+    try:
+        # Read image
+        image = cv2.imread(image_path)
+        height, width = image.shape[:2]
+        
+        # Enlarge image
+        scale_factor = 2
+        image = cv2.resize(image, (width * scale_factor, height * scale_factor))
+        
+        # Convert to HSV to handle colored text better
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        
+        # Create masks for different colored text
+        # Dark text
+        lower_black = np.array([0, 0, 0])
+        upper_black = np.array([180, 255, 100])
+        mask_black = cv2.inRange(hsv, lower_black, upper_black)
+        
+        # Process each color channel separately
+        results = []
+        
+        # Process original and black mask
+        for mask in [None, mask_black]:
+            if mask is not None:
+                processed = cv2.bitwise_and(image, image, mask=mask)
+            else:
+                processed = image.copy()
+            
+            # Convert to grayscale
+            gray = cv2.cvtColor(processed, cv2.COLOR_BGR2GRAY)
+            
+            # Threshold
+            _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            
+            # OCR with different PSM modes
+            for psm in [3, 6, 11]:  # Try different page segmentation modes
+                config = f'--oem 3 --psm {psm}'
+                text = pytesseract.image_to_string(binary, config=config)
+                results.extend([line.strip() for line in text.split('\n') if line.strip()])
+        
+        # Remove duplicates and empty lines
+        unique_results = list(set(results))
+        
+        # Categorize detected components
+        components = {
+            "text": "\n".join(unique_results),
+            "detected_items": {
+                "client": [],
+                "server": [],
+                "data": [],
+                "network": [],
+                "interfaces": [],
+                "security": []
+            }
+        }
+        
+        # Keywords to look for
+        keywords = {
+            "client": ["client", "web interface"],
+            "server": ["server", "kernel", "system manager"],
+            "data": ["sql", "database", "firebird", "data"],
+            "network": ["internet", "intranet"],
+            "interfaces": ["interface", "api", "access interface"],
+            "security": ["firewall", "security", "rule"]
+        }
+        
+        # Categorize each detected text
+        for text in unique_results:
+            text_lower = text.lower()
+            for category, terms in keywords.items():
+                if any(term in text_lower for term in terms):
+                    components["detected_items"][category].append(text)
+        
+        print("\nDebug - Raw OCR Text:")
+        print("\n".join(unique_results))
+        
+        print("\nDebug - Detected Components:")
+        for category, items in components["detected_items"].items():
+            if items:
+                print(f"{category}: {items}")
+        
+        return components
+        
+    except Exception as e:
+        print(f"Error in OCR processing: {e}")
+        return {
+            "text": "",
+            "detected_items": {},
+            "error": str(e)
+        }
 EOL
 
+# Create LLM provider base class
 cat > src/analysis/llm_providers/base.py << 'EOL'
-# [Previous base.py content]
+from abc import ABC, abstractmethod
+
+class LLMProvider(ABC):
+    @abstractmethod
+    def analyze(self, components):
+        """Analyze components and return security assessment"""
+        pass
 EOL
 
+# Create Gemini provider
 cat > src/analysis/llm_providers/gemini_provider.py << 'EOL'
-# [Previous gemini_provider.py content]
+import google.generativeai as genai
+from .base import LLMProvider
+import json
+
+class GeminiProvider(LLMProvider):
+    def __init__(self, api_key):
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-pro')
+    
+    def analyze(self, components):
+        prompt = f"""
+        You are a PCI-DSS security expert analyzing an architecture diagram.
+        
+        Diagram components detected: {components['detected_items']}
+        Raw text found: {components['text']}
+
+        Even if the text detection is imperfect, analyze the general architecture for basic security patterns.
+        Focus on these key aspects:
+
+        1. Basic Security Patterns:
+           - Client/Internet facing components
+           - Internal systems and databases
+           - Network boundaries
+        
+        2. Common Security Issues:
+           - Direct database exposure
+           - Missing network segmentation
+           - Lack of security controls
+        
+        3. PCI-DSS Basics:
+           - Public/private separation
+           - Data protection measures
+           - Access control patterns
+
+        Respond ONLY with a valid JSON object in this exact format:
+        {{
+            "checks": {{
+                "Firewalls present": false,
+                "Network segmentation": true,
+                "CDE isolation": false
+            }},
+            "recommendations": [
+                "Clear, actionable recommendation",
+                "Focus on obvious security improvements"
+            ],
+            "analysis": {{
+                "architecture_patterns": ["detected patterns"],
+                "security_zones": ["identified boundaries"],
+                "key_risks": ["main security concerns"]
+            }}
+        }}
+        
+        Be practical and focus on obvious security improvements.
+        """
+        
+        response = self.model.generate_content(prompt)
+        print("\nDebug - LLM Response:")
+        print(response.text)
+        
+        # Clean and parse response
+        clean_response = response.text.strip()
+        if clean_response.startswith('```json'):
+            clean_response = clean_response[7:-3]
+        
+        results = json.loads(clean_response)
+        results["note"] = "This is an automated initial assessment. Please consult security team for detailed review."
+        
+        return results
 EOL
 
+# Create OpenAI provider
 cat > src/analysis/llm_providers/openai_provider.py << 'EOL'
-# [Previous openai_provider.py content]
+import openai
+from .base import LLMProvider
+import json
+import os
+
+class OpenAIProvider(LLMProvider):
+    def __init__(self, api_key, base_url=None, model="gpt-4"):
+        openai.api_key = api_key
+        if base_url:
+            openai.api_base = base_url
+        self.model = model
+    
+    def analyze(self, components):
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a PCI-DSS security expert analyzing architecture diagrams."
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Analyze this architecture diagram for security compliance:
+                Components detected: {components['detected_items']}
+                Raw text: {components['text']}
+                
+                Focus on:
+                1. Basic Security Patterns
+                2. Common Security Issues
+                3. PCI-DSS Basics
+                
+                Respond ONLY with a valid JSON object.
+                """
+            }
+        ]
+        
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=messages
+        )
+        
+        results = json.loads(response.choices[0].message.content)
+        results["note"] = "This is an automated initial assessment. Please consult security team for detailed review."
+        
+        return results
 EOL
 
+# Create security analyzer
 cat > src/analysis/analyzer.py << 'EOL'
-# [Previous analyzer.py content]
+import os
+from .llm_providers import GeminiProvider, OpenAIProvider
+
+class SecurityAnalyzer:
+    def __init__(self, provider_type="gemini"):
+        if provider_type == "gemini":
+            self.provider = GeminiProvider(os.getenv('GOOGLE_API_KEY'))
+        elif provider_type == "openai":
+            self.provider = OpenAIProvider(
+                api_key=os.getenv('OPENAI_API_KEY'),
+                base_url=os.getenv('OPENAI_BASE_URL')
+            )
+        else:
+            raise ValueError(f"Unsupported provider: {provider_type}")
+
+    def analyze_security(self, components):
+        try:
+            results = self.provider.analyze(components)
+            return results
+        except Exception as e:
+            print(f"Error during analysis: {e}")
+            return {
+                "checks": {
+                    "Firewalls present": False,
+                    "Network segmentation": False,
+                    "CDE isolation": False
+                },
+                "recommendations": [
+                    "Unable to fully analyze diagram - please ensure it shows system boundaries and components clearly",
+                    "Consider including network security controls in the diagram"
+                ],
+                "analysis": {
+                    "architecture_patterns": [],
+                    "security_zones": [],
+                    "key_risks": ["Analysis incomplete - see recommendations"]
+                },
+                "note": "This is an automated initial assessment. Please consult security team for detailed review."
+            }
 EOL
 
 # Create .env template
