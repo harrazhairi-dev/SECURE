@@ -3,9 +3,27 @@
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}Setting up Architecture Security Checker...${NC}"
+
+# Check Python version
+python_version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+if (( $(echo "$python_version < 3.8" | bc -l) )); then
+    echo -e "${RED}Error: Python 3.8 or higher is required${NC}"
+    exit 1
+fi
+
+# Check for Tesseract OCR
+if ! command -v tesseract &> /dev/null; then
+    echo -e "${RED}Error: Tesseract OCR is not installed${NC}"
+    echo "Please install Tesseract OCR:"
+    echo "  MacOS:     brew install tesseract"
+    echo "  Ubuntu:    sudo apt-get install tesseract-ocr"
+    echo "  Windows:   https://github.com/UB-Mannheim/tesseract/wiki"
+    exit 1
+fi
 
 # Create directory structure
 mkdir -p src/{ocr,analysis/llm_providers,utils}
@@ -16,17 +34,48 @@ echo -e "${BLUE}Creating virtual environment...${NC}"
 python3 -m venv venv
 source venv/bin/activate
 
-# Create files with content
-echo -e "${BLUE}Creating project files...${NC}"
-
-# Create requirements files
+# Create requirements.txt
 cat > requirements.txt << 'EOL'
-Pillow>=9.5.0
-pytesseract>=0.3.10
-google-cloud-vision>=3.4.4
-google-generativeai>=0.3.2
+# Core dependencies
 python-dotenv>=1.0.0
+Pillow>=10.0.0
+pytesseract>=0.3.10
 opencv-python>=4.8.0
+
+# LLM Provider dependencies
+google-generativeai>=0.3.0
+openai>=1.0.0  # Optional, for OpenAI support
+EOL
+
+# Create .env template
+cat > .env.template << 'EOL'
+# Debug Mode
+DEBUG=True
+
+# Default Provider (gemini or openai)
+DEFAULT_PROVIDER=gemini
+
+# Gemini Settings
+GOOGLE_API_KEY=your-gemini-api-key
+
+# OpenAI Settings (optional)
+#OPENAI_API_KEY=your-openai-api-key
+#OPENAI_BASE_URL=https://api.openai.com/v1
+#OPENAI_MODEL=gpt-4
+EOL
+
+# Create package initializers
+echo "Creating package initializers..."
+touch src/__init__.py
+touch src/ocr/__init__.py
+touch src/analysis/__init__.py
+touch src/utils/__init__.py
+
+cat > src/analysis/llm_providers/__init__.py << 'EOL'
+from .gemini_provider import GeminiProvider
+from .openai_provider import OpenAIProvider
+
+__all__ = ['GeminiProvider', 'OpenAIProvider']
 EOL
 
 # Create main.py
@@ -352,17 +401,6 @@ class SecurityAnalyzer:
             }
 EOL
 
-# Create .env template
-cat > .env.template << 'EOL'
-# LLM Provider API Keys
-GOOGLE_API_KEY=your-gemini-api-key
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_BASE_URL=your-custom-openai-url
-
-# Other Configuration
-DEBUG=False
-EOL
-
 # Create .gitignore
 cat > .gitignore << 'EOL'
 # Python
@@ -434,5 +472,12 @@ echo -e "${BLUE}Installing dependencies...${NC}"
 pip install -r requirements.txt
 
 echo -e "${GREEN}Setup complete! Next steps:${NC}"
-echo "1. Copy .env.template to .env and add your API keys"
-echo "2. Run: python main.py path/to/diagram.png" 
+echo "1. Copy .env.template to .env:"
+echo "   cp .env.template .env"
+echo "2. Add your API key to .env"
+echo "3. Run the analyzer:"
+echo "   python main.py path/to/diagram.png"
+
+# Optional: Create test diagram directory
+mkdir -p tests/test_diagrams
+echo -e "${BLUE}Created test_diagrams directory for your architecture diagrams${NC}" 

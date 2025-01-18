@@ -1,17 +1,39 @@
 import openai
 from .base import LLMProvider
+from src.utils.config import Config
 
 class OpenAIProvider(LLMProvider):
-    def __init__(self, api_key, model="gpt-4"):
-        openai.api_key = api_key
-        self.model = model
+    """OpenAI implementation of LLM provider"""
     
-    def analyze(self, components):
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are a PCI-DSS security expert..."},
-                {"role": "user", "content": f"Analyze this architecture diagram: {components}"}
+    def __init__(self):
+        config = Config.get_provider_config('openai')
+        super().__init__(**config)
+        
+        # Configure OpenAI
+        openai.api_key = self.config['api_key']
+        if self.config.get('base_url'):
+            openai.api_base = self.config['base_url']
+    
+    def _generate_content(self, prompt: str) -> str:
+        """Generate content using OpenAI"""
+        try:
+            messages = [
+                {"role": "system", "content": "You are a PCI-DSS security expert analyzing architecture diagrams."},
+                {"role": "user", "content": prompt}
             ]
-        )
-        return response 
+            
+            response = openai.ChatCompletion.create(
+                model=self.config['model'],
+                messages=messages,
+                temperature=self.config['temperature']
+            )
+            
+            if Config.DEBUG:
+                print(f"\nDebug - OpenAI Response:\n{response.choices[0].message.content}")
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            if Config.DEBUG:
+                print(f"OpenAI generation error: {e}")
+            raise 

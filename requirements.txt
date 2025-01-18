@@ -1,5 +1,8 @@
-Pillow==10.2.0
-pytesseract==0.3.10
-google-cloud-vision==3.4.4
-google-generativeai==0.3.2
-python-dotenv==1.0.0
+# Core dependencies
+python-dotenv>=1.0.0
+Pillow>=10.0.0  # For image processing
+pytesseract>=0.3.10  # For OCR
+
+# LLM Provider dependencies
+google-generativeai>=0.3.0  # For Gemini
+openai>=1.0.0  # For OpenAI

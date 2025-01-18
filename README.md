@@ -1,196 +1,153 @@
 # Architecture Security Checker
 
-A tool that analyzes architecture diagrams for PCI-DSS compliance using OCR and LLM technology. It can detect basic security patterns, network segmentation, and provide recommendations.
+A comprehensive tool for analyzing architecture diagrams against PCI-DSS compliance requirements using OCR and LLM technology.
+
+## Features
+
+- **Automated Security Analysis**
+  - PCI-DSS compliance checks
+  - Network segmentation analysis
+  - Security control detection
+  - Risk identification
+
+- **Multiple LLM Support**
+  - Google Gemini (default)
+  - OpenAI (optional)
+  - Extensible for custom LLMs
+
+- **Comprehensive Output**
+  - Security checks status
+  - Compliance scoring
+  - Actionable recommendations
+  - Attack vector analysis
+  - Security control suggestions
 
 ## Prerequisites
 
 1. Python 3.8 or higher
-2. Tesseract OCR installed:
+2. Tesseract OCR:
    ```bash
-   # For MacOS
+   # MacOS
    brew install tesseract
    
-   # For Ubuntu/Debian
+   # Ubuntu/Debian
    sudo apt-get install tesseract-ocr
    
-   # For Windows
-   # Download installer from: https://github.com/UB-Mannheim/tesseract/wiki
+   # Windows
+   # Download from: https://github.com/UB-Mannheim/tesseract/wiki
    ```
 
-## Initial Setup
+## Quick Start
 
-1. Clone the repository:
+1. **Setup**
    ```bash
-   git clone https://github.com/harrazhairi-dev/SECURE.git
-   cd SECURE
-   ```
-
-2. Run the setup script:
-   ```bash
+   git clone <repository-url>
+   cd architecture-security-checker
    chmod +x setup.sh
    ./setup.sh
    ```
 
-3. Create and configure your environment file:
+2. **Configuration**
    ```bash
    cp .env.template .env
+   # Edit .env with your API keys
    ```
 
-4. Edit `.env` with your API keys:
-   ```plaintext
-   # For Gemini (Default)
-   GOOGLE_API_KEY=your-gemini-api-key
-   
-   # For OpenAI or Custom LLM
-   OPENAI_API_KEY=your-openai-api-key
-   OPENAI_BASE_URL=your-custom-endpoint  # Optional, for private LLMs
-   ```
-
-## Usage
-
-### Basic Usage (Gemini)
-```bash
-# Activate virtual environment (if not already activated)
-source venv/bin/activate  # On Unix/MacOS
-# or
-.\venv\Scripts\activate  # On Windows
-
-# Run analysis on a diagram
-python main.py path/to/your/diagram.png
-```
-
-### Using OpenAI or Custom LLM
-```bash
-python main.py path/to/your/diagram.png --provider openai
-```
-
-## Understanding the Output
-
-The tool provides several sections of analysis:
-
-1. **Quick Security Check Results**
-   ```
-   ✓ Firewalls present
-   ✗ Network segmentation
-   ✗ CDE isolation
-   ```
-
-2. **Architecture Patterns**
-   - Identifies architectural styles
-   - Lists major components
-
-3. **Security Zones**
-   - Identifies network boundaries
-   - Lists security domains
-
-4. **Key Security Risks**
-   - Highlights potential vulnerabilities
-   - Identifies missing controls
-
-5. **Recommendations**
-   - Actionable improvements
-   - PCI-DSS specific suggestions
-
-## Supported Diagram Types
-
-- PNG and JPG formats
-- Architecture diagrams showing:
-  - Network components
-  - System boundaries
-  - Data flows
-  - Security controls
-
-## Troubleshooting
-
-### OCR Issues
-If the tool isn't detecting text correctly:
-1. Ensure diagram text is clear and readable
-2. Try increasing image resolution
-3. Ensure good contrast between text and background
-
-### API Key Issues
-If you get authentication errors:
-1. Check your `.env` file has correct API keys
-2. Ensure keys have necessary permissions
-3. For custom LLMs, verify the BASE_URL is correct
-
-### General Issues
-1. Check virtual environment is activated
-2. Verify all dependencies are installed:
+3. **Run Analysis**
    ```bash
-   pip install -r requirements.txt
-   ```
-3. Ensure Tesseract OCR is properly installed:
-   ```bash
-   tesseract --version
+   python main.py path/to/diagram.png
    ```
 
-## Project Structure
-```
-arch-security-checker/
-├── src/
-│   ├── ocr/
-│   │   └── extractor.py          # OCR processing
-│   ├── analysis/
-│   │   ├── llm_providers/        # LLM integrations
-│   │   │   ├── base.py
-│   │   │   ├── gemini_provider.py
-│   │   │   └── openai_provider.py
-│   │   └── analyzer.py           # Main analysis logic
-│   └── utils/
-├── tests/
-│   └── test_diagrams/           # Test images
-├── requirements.txt             # Dependencies
-├── .env.template               # Environment template
-├── setup.sh                    # Setup script
-└── main.py                     # Entry point
+## Configuration Options
+
+```plaintext
+# .env file
+DEBUG=True                    # Enable debug output
+DEFAULT_PROVIDER=gemini       # Default LLM provider
+GOOGLE_API_KEY=xxx           # Required for Gemini
+OPENAI_API_KEY=xxx           # Optional, for OpenAI
+OPENAI_BASE_URL=xxx          # Optional, for custom endpoints
+OPENAI_MODEL=xxx             # Optional, default: gpt-4
 ```
 
-## Using with Private LLMs
+## Analysis Output
 
-1. Configure your private LLM endpoint:
-   ```plaintext
-   # .env file
-   OPENAI_API_KEY=your-private-key
-   OPENAI_BASE_URL=https://your-llm-endpoint.com/v1
-   ```
+1. **Security Checks**
+   - Firewalls presence
+   - Network segmentation
+   - CDE isolation
+   - Encryption (transit/rest)
+   - Access controls
+   - Audit logging
 
-2. Run with OpenAI provider:
-   ```bash
-   python main.py diagram.png --provider openai
-   ```
+2. **Compliance Score**
+   - High/Medium/Low rating
+   - Scoring rationale
+
+3. **Detailed Analysis**
+   - Architecture patterns
+   - Security zones
+   - Key risks
+   - Attack vectors
+   - Security controls
+
+4. **Recommendations**
+   - Prioritized by severity
+   - Actionable items
+   - PCI-DSS specific guidance
 
 ## Best Practices
 
 1. **Diagram Preparation**
-   - Use high contrast colors
-   - Include clear component labels
+   - Use high contrast
+   - Label components clearly
    - Show network boundaries
-   - Mark security controls
+   - Include security controls
 
-2. **Security Analysis**
-   - Review all recommendations
-   - Validate findings manually
-   - Consult security team for critical systems
+2. **Analysis Review**
+   - Verify automated findings
+   - Consult security team
+   - Document decisions
 
-3. **Regular Updates**
-   - Keep dependencies updated
-   - Update API keys as needed
-   - Check for tool updates
+## Troubleshooting
+
+1. **OCR Issues**
+   - Ensure clear text
+   - Check image quality
+   - Verify Tesseract installation
+
+2. **LLM Issues**
+   - Verify API keys
+   - Check network connectivity
+   - Enable DEBUG mode
+
+## Project Structure
+```
+architecture-security-checker/
+├── src/
+│   ├── ocr/                  # OCR processing
+│   ├── analysis/            # Security analysis
+│   │   ├── llm_providers/   # LLM integrations
+│   │   └── analyzer.py
+│   └── utils/              # Shared utilities
+├── tests/
+├── main.py                 # Entry point
+├── setup.sh               # Setup script
+└── README.md
+```
 
 ## Limitations
 
-- Basic PCI-DSS checks only
-- OCR accuracy depends on diagram quality
-- No persistent storage of results
-- Limited to static diagram analysis
+- Focused on PCI-DSS requirements
+- OCR quality dependent
+- Static analysis only
+- No persistent storage
 
 ## Support
 
-For issues and feature requests:
-1. Check troubleshooting guide above
-2. Open an issue on GitHub
-3. Include sample diagram (if possible)
+- GitHub Issues
+- Documentation
+- Example diagrams
 
 ## License
 
