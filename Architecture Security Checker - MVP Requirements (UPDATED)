@@ -1,50 +1,72 @@
 # Architecture Security Checker - MVP Requirements
 
 ## 1. Current Status ✅
-- Basic CLI implementation complete
-- OCR processing working
-- LLM integration functional (Gemini)
-- Basic security analysis working
+- Enhanced CLI implementation complete
+- OCR processing with improved accuracy
+- Multi-provider LLM integration (Gemini/OpenAI)
+- Comprehensive PCI-DSS analysis
+- Structured JSON responses
 
 ## 2. Technical Implementation
 
 ### 2.1 Command Line Implementation (COMPLETED)
 ```bash
 # Current usage
-$ python main.py path/to/diagram.png
+$ python main.py path/to/diagram.png [--provider {gemini,openai}]
 ```
 
 #### Working Features
 1. OCR Processing:
-   - Basic component detection
-   - Text extraction
+   - Advanced component detection
+   - Multi-color text extraction
    - Network boundary recognition
+   - Debug output for verification
 
 2. LLM Analysis:
    - Provider-agnostic architecture
-   - Supports both Gemini and OpenAI
-   - Configurable through environment variables:
+   - Supports Gemini and OpenAI
+   - Configurable through .env:
      ```bash
-     # For Gemini
-     export GOOGLE_API_KEY='your-key'
+     # Debug Mode
+     DEBUG=True
      
-     # For OpenAI (future)
-     export OPENAI_API_KEY='your-key'
-     export OPENAI_BASE_URL='your-url'  # Optional for custom endpoints
+     # Default Provider
+     DEFAULT_PROVIDER=gemini
+     
+     # Gemini Settings
+     GOOGLE_API_KEY='your-key'
+     
+     # OpenAI Settings (optional)
+     OPENAI_API_KEY='your-key'
+     OPENAI_BASE_URL='your-url'
+     OPENAI_MODEL='gpt-4'
      ```
 
 #### Current Output Format
 ```
-Quick Security Check Results:
+Security Check Results:
 ✓ Firewalls present
 ✓ Network segmentation
-✗ CDE isolation
+✓ CDE isolation
+✓ Encryption in transit
+✓ Encryption at rest
+✓ Access controls
+✓ Audit logging
 
+Compliance Score: Medium
+
+Analysis Details:
 Architecture Patterns:
 - Pattern details...
 
 Security Zones:
 - Zone details...
+
+Attack Vectors:
+- Vector details...
+
+Security Controls:
+- Control details...
 
 Key Security Risks:
 - Risk details...
@@ -57,14 +79,18 @@ Recommendations:
 - Bot implementation pending
 - Will use existing analysis engine
 - Need to add file handling
+- Format responses for Slack display
 
 ## 3. Current Success Metrics
 ✅ Successfully processes different diagram styles
 ✅ < 30 second response time
 ✅ Provides actionable feedback
+✅ Comprehensive PCI-DSS analysis
+✅ Multi-provider support
 ⚠️ Needs more testing with various diagrams
 
 ## 4. Known Limitations
 - OCR accuracy varies with diagram quality
-- Limited to basic PCI-DSS checks
+- Limited to PCI-DSS focused checks
 - No persistent storage yet
+- No historical analysis comparison

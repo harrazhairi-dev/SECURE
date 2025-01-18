@@ -37,17 +37,42 @@ A comprehensive tool for analyzing architecture diagrams against PCI-DSS complia
    # Download from: https://github.com/UB-Mannheim/tesseract/wiki
    ```
 
-## Quick Start
+## Installation Options
 
-1. **Setup**
-   ```bash
-   git clone <repository-url>
-   cd architecture-security-checker
-   chmod +x setup.sh
-   ./setup.sh
-   ```
+### Option 1: Automated Setup Script
+```bash
+# Create a new directory
+mkdir architecture-security-checker && cd architecture-security-checker
 
-2. **Configuration**
+# Download setup script
+curl -O https://raw.githubusercontent.com/your-username/architecture-security-checker/main/setup.sh
+
+# Make it executable and run
+chmod +x setup.sh
+./setup.sh
+```
+
+### Option 2: Manual Clone and Setup
+```bash
+# Clone repository
+git clone <repository-url>
+cd architecture-security-checker
+
+# Run setup script
+chmod +x setup.sh
+./setup.sh
+```
+
+The setup script will:
+- Check Python and Tesseract OCR dependencies
+- Create virtual environment
+- Install required packages
+- Set up project structure
+- Create configuration templates
+
+## Configuration
+
+1. **Configuration**
    ```bash
    cp .env.template .env
    # Edit .env with your API keys
